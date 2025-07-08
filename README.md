@@ -1,1 +1,1 @@
-https://philomatics.com/git-cheatsheet-release
+[!(Github cheat sheeet) https://philomatics.com/git-cheatsheet-release]
