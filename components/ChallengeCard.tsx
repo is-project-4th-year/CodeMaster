@@ -2,7 +2,7 @@
 import { Challenge } from "@/types/challenge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Timer,  Users , ChevronRight, Lock, Trophy } from "lucide-react";
+import { Timer, Users, ChevronRight, Lock, Trophy } from "lucide-react";
 import { Button } from "./ui/button";
 
 export const ChallengeCard: React.FC<{ challenge: Challenge }> = ({ challenge }) => {
@@ -14,11 +14,11 @@ export const ChallengeCard: React.FC<{ challenge: Challenge }> = ({ challenge })
 
   const attemptChallenge = () => {
     if (!challenge.locked) {
-      // Logic to start the challenge
       window.location.href = `/challenges/${challenge.id}`;
       console.log(`Starting challenge: ${challenge.title}`);
     }
-  }
+  };
+
   return (
     <Card className={`hover:shadow-lg transition-all cursor-pointer ${challenge.locked ? 'opacity-60' : ''}`}>
       <CardHeader>
@@ -34,7 +34,9 @@ export const ChallengeCard: React.FC<{ challenge: Challenge }> = ({ challenge })
               {challenge.locked && <Lock className="w-4 h-4" />}
               {challenge.title}
             </CardTitle>
-            <CardDescription className="mt-1">{challenge.description}</CardDescription>
+            <CardDescription className="mt-1 line-clamp-2">
+              {challenge.description}
+            </CardDescription>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-1 text-yellow-500 font-bold">
@@ -46,15 +48,22 @@ export const ChallengeCard: React.FC<{ challenge: Challenge }> = ({ challenge })
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-1">
-            {challenge.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-            ))}
-          </div>
+          {/* Tags */}
+          {challenge.tags && challenge.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {challenge.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Stats */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Users className="w-3 h-3" />
-              {challenge.solvedCount.toLocaleString()} solved
+              {(challenge.solvedCount ?? 0).toLocaleString()} solved
             </div>
             {challenge.timeLimit && (
               <div className="flex items-center gap-1">
@@ -63,6 +72,8 @@ export const ChallengeCard: React.FC<{ challenge: Challenge }> = ({ challenge })
               </div>
             )}
           </div>
+
+          {/* Action Button */}
           <Button 
             onClick={attemptChallenge} 
             disabled={challenge.locked}
