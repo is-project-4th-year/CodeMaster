@@ -1,9 +1,27 @@
-import React from 'react'
+import React from 'react';
+import { notFound } from 'next/navigation';
 
-function ChallengPage() {
-  return (
-    <div>ChallengPage</div>
-  )
+import { ChallengeClient } from '@/components/challenge/challengeClient';
+import type { Challenge } from '@/types/challenge';
+import { fetchChallengeById, fetchTestCases } from '@/actions/challenges';
+
+interface PageProps {
+  params: { id: string };
 }
 
-export default ChallengPage
+export default async function ChallengePage({ params }: PageProps) {
+  const challenge = await fetchChallengeById(params.id);
+  
+  if (!challenge) {
+    notFound();
+  }
+
+  const testCases = await fetchTestCases(params.id);
+
+  return (
+    <ChallengeClient 
+      challenge={challenge} 
+      testCases={testCases}
+    />
+  );
+}
