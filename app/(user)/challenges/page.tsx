@@ -6,9 +6,11 @@ import { ChallengeCard } from '@/components/ChallengeCard';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { fetchChallenges } from '@/actions/challenges';
+import { Challenge } from '@/types/challenge';
 
 export default async function ChallengesPage() {
-  let challenges;
+ 
+  let challenges: Challenge[];
   let error = null;
 
   try {

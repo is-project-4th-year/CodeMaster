@@ -10,6 +10,7 @@ export interface Challenge {
   solvedCount: number;
   locked: boolean;
   requiredLevel?: number;
+  solutions?: string;
 }
 export interface Exercise {
   id: string;
