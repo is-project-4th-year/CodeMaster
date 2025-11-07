@@ -12,7 +12,7 @@ import { SuccessModal } from './SuccessModal';
 import { useTimer } from '@/hooks/useTimer';
 
 import type { TestResult } from '@/types/challenge';
-import { submitSolution } from '@/actions/submissions';
+import { submitSolution, type RewardBreakdown } from '@/actions/submissions';
 
 interface ChallengeClientProps {
   challenge: Challenge;
@@ -34,6 +34,13 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
   const [hintsUsed, setHintsUsed] = useState(0);
   const [attemptsCount, setAttemptsCount] = useState(0);
   const [submissionError, setSubmissionError] = useState<string>();
+  const [submissionResult, setSubmissionResult] = useState<{
+    pointsEarned: number;
+    xpGained: number;
+    leveledUp: boolean;
+    newLevel?: number;
+    rewards: RewardBreakdown;
+  }>();
   
   // Set minimal helpful template on mount - only run once
   useEffect(() => {
@@ -140,7 +147,7 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
       const isPerfectSolve = attemptsCount === 1 && hintsUsed === 0;
       
       const result = await submitSolution({
-        exerciseId: challenge.id,
+        exerciseId: parseInt(challenge.id),
         code,
         testsPassed: testResults.filter(r => r.passed).length,
         testsTotal: testResults.length,
@@ -154,9 +161,16 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
         return;
       }
       
-      // Success! Navigate back to challenges
-      router.push('/challenges');
-      router.refresh();
+      // Store submission result to show in modal
+      if (result.data) {
+        setSubmissionResult(result.data);
+      }
+      
+      // Wait a bit to show the rewards, then navigate
+      setTimeout(() => {
+        router.push('/challenges');
+        router.refresh();
+      }, 3000);
     } catch (error) {
       console.error('Submission error:', error);
       setSubmissionError(
@@ -234,8 +248,11 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
           timeElapsed={time}
           hintsUsed={hintsUsed}
           attemptsCount={attemptsCount}
+          submissionResult={submissionResult}
+          rewards={submissionResult?.rewards}
           onSubmit={handleSubmit}
           onClose={() => setShowSuccess(false)}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>
