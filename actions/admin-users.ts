@@ -227,7 +227,7 @@ export async function getUsers(
         total_solved: profile.total_solved || 0,
         joined: profile.created_at,
         lastActive: lastLogin,
-        status: profile.is_banned ? 'inactive' : (isActive ? 'active' : 'inactive'),
+        status: profile.is_banned ? 'inactive' : (isActive ? 'active' : 'inactive') as 'active' | 'inactive',
         is_banned: profile.is_banned || false,
         avatar: profile.avatar
       };
@@ -333,7 +333,7 @@ try {
       total_solved: profile.total_solved || 0,
       joined: profile.created_at,
       lastActive: lastSignIn || profile.created_at,
-      status: profile.is_banned ? 'inactive' : (isActive ? 'active' : 'inactive'),
+      status: (profile.is_banned ? 'inactive' : (isActive ? 'active' : 'inactive')) as 'active' | 'inactive',
       is_banned: profile.is_banned || false,
       avatar: profile.avatar
     };
