@@ -1,56 +1,101 @@
 import React from 'react';
-
 import { createClient } from '@/lib/supabase/server';
 import LeaderboardClient from '@/components/leaderboard-client';
 
 
-// Fetch different leaderboard types
-async function fetchLeaderboards() {
+interface LeaderboardSnapshotRow {
+  rank: number;
+  user_id: string;
+  username?: string;
+  avatar?: string;
+  points: number;
+  challenges_solved: number;
+}
+
+interface UserProfileRow {
+  user_id: string;
+  avatar?: string;
+  total_points: number;
+  total_solved: number;
+}
+
+/* -------------------------------------------------
+   2. Final Leaderboard Entry (shared with client)
+   ------------------------------------------------- */
+export interface LeaderboardEntry {
+  rank: number;
+  username: string;
+  avatar: string;
+  points: number;
+  solvedToday: number;
+  isCurrentUser: boolean;
+}
+
+export interface Leaderboards {
+  daily: LeaderboardEntry[];
+  weekly: LeaderboardEntry[];
+  allTime: LeaderboardEntry[];
+}
+
+/* -------------------------------------------------
+   3. Typed Data Fetching
+   ------------------------------------------------- */
+async function fetchLeaderboards(): Promise<Leaderboards> {
   const supabase = await createClient();
-  
 
-   const { data } = await supabase.auth.getClaims();
+  // Correct way: get session → user
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const currentUserId = session?.user?.id;
 
-  const user = data?.claims;
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  const currentUserId = user?.id;
-
-  // Fetch daily leaderboard
+  // ── Daily Leaderboard ──
   const { data: dailyData } = await supabase
     .from('leaderboard_snapshots')
     .select('*')
     .eq('period_type', 'daily')
-    .eq('period_date', new Date().toISOString().split('T')[0])
+    .eq('period_date', todayStr)
     .order('rank', { ascending: true })
-    .limit(50);
+    .limit(50)
+    .returns<LeaderboardSnapshotRow[]>();
 
-  // Fetch weekly leaderboard
+  // ── Weekly Leaderboard ──
   const startOfWeek = new Date();
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  
+  const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
+
   const { data: weeklyData } = await supabase
     .from('leaderboard_snapshots')
     .select('*')
     .eq('period_type', 'weekly')
-    .gte('period_date', startOfWeek.toISOString().split('T')[0])
+    .gte('period_date', startOfWeekStr)
     .order('rank', { ascending: true })
-    .limit(50);
+    .limit(50)
+    .returns<LeaderboardSnapshotRow[]>();
 
-  // Fetch all-time leaderboard
+  // ── All-Time Leaderboard ──
   const { data: allTimeData } = await supabase
     .from('user_profiles')
     .select('user_id, avatar, total_points, total_solved')
     .order('total_points', { ascending: false })
-    .limit(50);
+    .limit(50)
+    .returns<UserProfileRow[]>();
 
-  // Get usernames for all-time
-  const allTimeWithUsernames = await Promise.all(
+  // Fetch usernames via admin API (only in server components)
+  const allTimeWithUsernames: LeaderboardEntry[] = await Promise.all(
     (allTimeData || []).map(async (entry, index) => {
-      const { data: userData } = await supabase.auth.admin.getUserById(entry.user_id);
+      let username = 'Anonymous';
+      if (entry.user_id) {
+        const { data: adminUser } = await supabase.auth.admin.getUserById(entry.user_id);
+        username = adminUser?.user?.email?.split('@')[0] || 'Anonymous';
+      }
+
       return {
         rank: index + 1,
-        username: userData?.user?.email?.split('@')[0] || 'Anonymous',
-        avatar: entry.avatar || '👤',
+        username,
+        avatar: entry.avatar || 'User',
         points: entry.total_points,
         solvedToday: entry.total_solved,
         isCurrentUser: entry.user_id === currentUserId,
@@ -58,22 +103,26 @@ async function fetchLeaderboards() {
     })
   );
 
-  const formatLeaderboard = (data: any[]) => 
-    (data || []).map((entry: any) => ({
+  // ── Helper: safely format snapshot-based leaderboards ──
+  const formatLeaderboard = (
+    data: LeaderboardSnapshotRow[] | null | undefined
+  ): LeaderboardEntry[] =>
+    (data || []).map((entry) => ({
       rank: entry.rank,
       username: entry.username || 'Anonymous',
-      avatar: entry.avatar || '👤',
+      avatar: entry.avatar || 'User',
       points: entry.points,
       solvedToday: entry.challenges_solved,
       isCurrentUser: entry.user_id === currentUserId,
     }));
 
   return {
-    daily: formatLeaderboard(dailyData || []),
-    weekly: formatLeaderboard(weeklyData || []),
+    daily: formatLeaderboard(dailyData),
+    weekly: formatLeaderboard(weeklyData),
     allTime: allTimeWithUsernames,
   };
 }
+
 
 export default async function LeaderboardPage() {
   const leaderboards = await fetchLeaderboards();
