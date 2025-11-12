@@ -9,8 +9,9 @@ import { AlertCircle, Sparkles, TrendingUp, Info, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Challenge } from '@/types/challenge';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { fetchChallenges } from '@/actions/challenges';
+
 import { createClient } from '@/lib/supabase/client';
+import { fetchChallenges } from '@/actions/client';
 
 export default function ChallengesPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);

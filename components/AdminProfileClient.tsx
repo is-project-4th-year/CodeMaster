@@ -53,18 +53,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import multiavatar from '@multiavatar/multiavatar/esm';
-import {
-  checkMFAStatus,
-  enrollMFA,
-  continueExistingEnrollment,
-  verifyMFAEnrollment,
-  unenrollMFA,
-  updatePassword,
-  deleteAccount,
-  logoutUser,
-  updateProfile
-} from '@/actions/admin-profile';
+
 import { createClient } from '@/lib/supabase/client'; // Assuming you have a client-side Supabase initializer
+import { checkMFAStatus, continueExistingEnrollment, enrollMFA, unenrollMFA, verifyMFAEnrollment } from '@/actions';
 
 interface AdminProfileData {
   id: string;

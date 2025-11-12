@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,6 @@ import { BookOpen, Lightbulb, Code } from 'lucide-react';
 import { TestCase } from '@/types/challenge';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
-import DOMPurify from 'dompurify';
 
 interface ChallengeDescriptionProps {
   description: string;
@@ -24,33 +23,14 @@ export const ChallengeDescription: React.FC<ChallengeDescriptionProps> = ({
   showHints,
   onShowHints
 }) => {
-  // Detect if content is HTML or Markdown and sanitize accordingly
-  const sanitizedDescription = useMemo(() => {
-    if (!description) return '';
+  const [DOMPurify, setDOMPurify] = useState<any>(null);
 
-    // Check if it's HTML (starts with HTML tags)
-    const isHTML = /^\s*<[a-z][\s\S]*>/i.test(description.trim());
-
-    if (isHTML) {
-      // Sanitize HTML with DOMPurify
-      return DOMPurify.sanitize(description, {
-        ALLOWED_TAGS: [
-          'p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li',
-          'blockquote',
-          'a', 'img',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td',
-          'div', 'span'
-        ],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class'],
-        ALLOW_DATA_ATTR: false,
-      });
-    } else {
-      // Legacy markdown rendering (backward compatibility)
-      return renderMarkdown(description);
-    }
-  }, [description]);
+  // Load DOMPurify only on client side
+  useEffect(() => {
+    import('dompurify').then((module) => {
+      setDOMPurify(module.default);
+    });
+  }, []);
 
   // Legacy markdown renderer for backward compatibility
   const renderMarkdown = (text: string) => {
@@ -74,9 +54,37 @@ export const ChallengeDescription: React.FC<ChallengeDescriptionProps> = ({
     html = html.replace(/^\- (.+)$/gm, '<li class="ml-6 mb-2 list-disc">$1</li>');
     html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, '<ul class="space-y-1 my-4">$&</ul>');
     
-    // Sanitize the rendered markdown too
-    return DOMPurify.sanitize(html);
+    return html;
   };
+
+  // Detect if content is HTML or Markdown and sanitize accordingly
+  const sanitizedDescription = useMemo(() => {
+    if (!description || !DOMPurify) return '';
+
+    // Check if it's HTML (starts with HTML tags)
+    const isHTML = /^\s*<[a-z][\s\S]*>/i.test(description.trim());
+
+    if (isHTML) {
+      // Sanitize HTML with DOMPurify
+      return DOMPurify.sanitize(description, {
+        ALLOWED_TAGS: [
+          'p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre',
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          'ul', 'ol', 'li',
+          'blockquote',
+          'a', 'img',
+          'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'div', 'span'
+        ],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class'],
+        ALLOW_DATA_ATTR: false,
+      });
+    } else {
+      // Legacy markdown rendering (backward compatibility)
+      const renderedMarkdown = renderMarkdown(description);
+      return DOMPurify.sanitize(renderedMarkdown);
+    }
+  }, [description, DOMPurify]);
 
   return (
     <Tabs defaultValue="description" className="w-full">
@@ -98,10 +106,14 @@ export const ChallengeDescription: React.FC<ChallengeDescriptionProps> = ({
       <TabsContent value="description" className="space-y-4">
         <Card>
           <CardContent className="pt-6">
-            <div
-              className="prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
-            />
+            {sanitizedDescription ? (
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+              />
+            ) : (
+              <div className="text-sm text-muted-foreground">Loading description...</div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>

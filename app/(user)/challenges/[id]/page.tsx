@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 
 import { ChallengeClient } from '@/components/challenge/challengeClient';
 import type { Challenge } from '@/types/challenge';
-import { fetchChallengeById, fetchTestCases } from '@/actions/challenges';
+import { fetchChallengeById, fetchTestCases } from '@/actions/client';
+
 
 interface PageProps {
   params: { id: string };

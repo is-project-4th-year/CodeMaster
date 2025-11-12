@@ -3,9 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, Download, TrendingUp, Users, Shield, Crown, User as UserIcon } from "lucide-react";
-import { getUserManagementStats, getUsers } from '@/actions/admin-users';
+
 import UsersFilters from '@/components/UsersFilters';
 import UsersList from '@/components/UsersList';
+import { getUserManagementStats, getUsers } from '@/actions';
 
 
 interface PageProps {

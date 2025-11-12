@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { register } from "@/actions/auth/register";
+import { register } from "@/actions/server/auth/register";
 
 export function SignUpForm() {
   const [email, setEmail] = useState("");
