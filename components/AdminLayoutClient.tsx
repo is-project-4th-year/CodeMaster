@@ -20,7 +20,8 @@ import {
   LogOut,
   User,
 
-  FileText
+  FileText,
+  LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -37,7 +38,7 @@ import { AdminStats, getAdminStats, getAdminUserInfo } from '@/actions';
 interface NavigationItem {
   label: string;
   href: string;
-  icon: any;
+  icon: LucideIcon;
   badge: number | null;
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
 }

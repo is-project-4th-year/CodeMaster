@@ -1,16 +1,55 @@
+'use client';
+
 import React from 'react';
 import { redirect } from 'next/navigation';
-
-
 import { createClient } from '@/lib/supabase/server';
 import AchievementsClient from '@/components/achievement-client';
 
-// Fetch all achievements with user progress
-async function fetchAllAchievementsWithProgress() {
+/* -------------------------------------------------
+   1. Types that mirror the DB tables
+   ------------------------------------------------- */
+type RewardType = 'xp' | 'coins' | 'badge';
+type Category = 'milestone' | 'streak' | 'skill' | 'speed' | 'social';
+type Tier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+interface AchievementRow {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;               // e.g. "TARGET", "ROCKET", …
+  category: Category;
+  tier: Tier;
+  reward_type: RewardType;
+  reward_amount: number;
+  requirement_total: number;
+  user_achievements?: UserAchievementRow[];
+}
+
+interface UserAchievementRow {
+  user_id: string;
+  progress: number;
+  earned_at: string | null;   // ISO string when unlocked, otherwise null
+}
+
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: Category;
+  tier: Tier;
+  reward: { type: RewardType; amount: number };
+  progress?: number;
+  total?: number;
+  unlockedAt?: string;
+}
+
+
+async function fetchAllAchievementsWithProgress(): Promise<Achievement[]> {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
-  
   if (!user) return [];
 
   const { data, error } = await supabase
@@ -27,9 +66,14 @@ async function fetchAllAchievementsWithProgress() {
 
   if (error || !data) return [];
 
-  return data.map((ach: any) => {
-    const userAch = ach.user_achievements?.find((ua: any) => ua.user_id === user.id);
-    
+  return data.map((ach: AchievementRow): Achievement => {
+    const userAch = ach.user_achievements?.find(
+      (ua: UserAchievementRow) => ua.user_id === user.id
+    );
+
+    const isUnlocked = !!userAch?.earned_at;
+    const hasProgress = ach.requirement_total > 0;
+
     return {
       id: ach.id,
       name: ach.name,
@@ -41,9 +85,12 @@ async function fetchAllAchievementsWithProgress() {
         type: ach.reward_type,
         amount: ach.reward_amount,
       },
-      progress: userAch?.progress || 0,
-      total: ach.requirement_total,
-      unlockedAt: userAch?.earned_at,
+
+      ...(hasProgress && {
+        progress: userAch?.progress ?? 0,
+        total: ach.requirement_total,
+      }),
+      ...(isUnlocked && { unlockedAt: userAch!.earned_at! }),
     };
   });
 }
