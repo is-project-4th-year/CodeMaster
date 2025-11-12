@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { deleteChallenge } from '@/actions/admin-challenges';
+import { deleteChallenge } from '@/actions';
 
 export default function AdminChallengeDetailClient({
   challengeId,

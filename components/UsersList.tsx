@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ChevronRight, Crown, Edit2, Eye, MoreVertical, Shield, UserIcon, Ban, Trash2 } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { UserManagementData } from '@/actions/admin-users';
-import { updateUserRole, toggleUserBan, deleteUser } from '@/actions/admin-users';
+
 import { toast } from 'sonner';
+import { deleteUser, toggleUserBan, updateUserRole, UserManagementData } from '@/actions';
 
 // Client-side helper function for relative time formatting
 function formatRelativeTime(dateString: string): string {

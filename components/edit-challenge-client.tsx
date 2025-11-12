@@ -30,7 +30,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { updateChallenge } from "@/actions/admin-challenges";
+
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
@@ -47,6 +47,7 @@ import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { ChallengeData, TestCaseData } from "@/actions/admin-challenges";
+import { updateChallenge } from "@/actions";
 
 const DIFFICULTY_LEVELS = [
   { rank: 1, name: "8 kyu", label: "Beginner", points: 10 },

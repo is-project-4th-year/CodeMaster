@@ -8,7 +8,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, Shield, ArrowLeft } from "lucide-react";
-import { login } from "@/actions/auth/login";
+import { login, verifyMFA } from "@/actions";
+
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -48,29 +49,23 @@ export function LoginForm() {
   };
   const handleMFAVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
+
     setIsLoading(true);
     setError(null);
 
     try {
-      if (!mfaCode || mfaCode.length !== 6) {
-        throw new Error("Please enter a valid 6-digit code");
-      }
+      const result = await verifyMFA(mfaFactorId, mfaChallengeId, mfaCode);
 
-      const { data, error } = await supabase.auth.mfa.verify({
-        factorId: mfaFactorId,
-        challengeId: mfaChallengeId,
-        code: mfaCode,
-      });
-
-      if (error) {
+      if (result.error) {
         throw new Error("Invalid verification code. Please try again.");
       }
 
-      if (data) {
+      if (result.user) {
         router.push("/dashboard");
         router.refresh();
       }
+
+     
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Verification failed");
     } finally {

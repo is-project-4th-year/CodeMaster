@@ -1,8 +1,10 @@
 // app/admin/challenges/[id]/edit/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { getChallengeById, getTestCases } from '@/actions/admin-challenges';
+
 import EditChallengeClient from '@/components/edit-challenge-client';
+import { fetchChallengeById } from '@/actions/client';
+import { getTestCases } from '@/actions';
 
 
 interface PageProps {
@@ -16,7 +18,7 @@ export default async function ChallengeEditPage({ params }: PageProps) {
   
   // Fetch challenge and test cases
   const [challenge, testCases] = await Promise.all([
-    getChallengeById(id),
+    fetchChallengeById(id),
     getTestCases(id)
   ]);
 

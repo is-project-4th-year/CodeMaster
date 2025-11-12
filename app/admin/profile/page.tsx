@@ -1,7 +1,8 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
-import { getAdminProfile } from '@/actions/admin-profile';
+
 import AdminProfileClient from '@/components/AdminProfileClient';
+import { getAdminProfile } from '@/actions';
 
 export default async function AdminProfilePage() {
   const profile = await getAdminProfile();

@@ -12,7 +12,8 @@ import { SuccessModal } from './SuccessModal';
 import { useTimer } from '@/hooks/useTimer';
 
 import type { TestResult } from '@/types/challenge';
-import { submitSolution, type RewardBreakdown } from '@/actions/submissions';
+import { RewardBreakdown, submitSolution } from '@/actions/server/challenges/submit';
+
 
 interface ChallengeClientProps {
   challenge: Challenge;

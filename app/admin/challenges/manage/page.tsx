@@ -3,10 +3,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Target, TrendingUp, BookOpen } from 'lucide-react';
-import { getAllChallenges, getChallengeStats } from '@/actions/admin-challenges';
+
 
 import Link from 'next/link';
 import ChallengesListClient from '@/components/ChallengesListClient';
+import { getAllChallenges, getChallengeStats } from '@/actions';
 
 interface PageProps {
   searchParams: Promise<{

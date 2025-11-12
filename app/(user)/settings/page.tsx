@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { redirect } from 'next/navigation';
-import { fetchUserProfile } from '@/actions/profile';
+
 import SettingsClient from '@/components/settings-client';
+import { fetchUserProfile } from '@/actions';
 
 export default async function SettingsPage() {
   const profile = await fetchUserProfile();

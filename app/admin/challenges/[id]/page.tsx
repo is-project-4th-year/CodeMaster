@@ -20,8 +20,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getChallengeById, getTestCases } from '@/actions/admin-challenges';
+
 import AdminChallengeDetailClient from '@/components/AdminChallengeDetailClient';
+import { fetchChallengeById } from '@/actions/client';
+import { getTestCases } from '@/actions';
 
 
 interface PageProps {
@@ -35,7 +37,7 @@ export default async function AdminChallengeDetailPage({ params }: PageProps) {
   
   // Fetch challenge and test cases in parallel
   const [challenge, testCases] = await Promise.all([
-    getChallengeById(id),
+    fetchChallengeById(id),
     getTestCases(id)
   ]);
 

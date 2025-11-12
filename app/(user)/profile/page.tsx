@@ -1,7 +1,8 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
-import { fetchDetailedStats, fetchUserProfile } from '@/actions/profile';
+
 import ProfileClient from '@/components/profile-card';
+import { fetchDetailedStats, fetchUserProfile } from '@/actions';
 
 export default async function ProfilePage() {
   // Fetch profile and stats in parallel

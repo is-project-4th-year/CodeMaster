@@ -14,13 +14,7 @@ import { Switch } from './ui/switch';
 import { UserProfile } from '@/types/exercise';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import {
-  checkMFAStatus,
-  enrollMFA,
-  continueExistingEnrollment,
-  verifyMFAEnrollment,
-  unenrollMFA,
-} from '@/actions/admin-profile';
+import { checkMFAStatus, continueExistingEnrollment, enrollMFA, unenrollMFA, verifyMFAEnrollment } from '@/actions';
 
 interface SettingsClientProps {
   profile: UserProfile;
