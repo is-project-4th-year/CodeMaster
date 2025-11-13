@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Challenge, TestCase } from '@/types/challenge';
+import { Challenge, TestCase, TestResult } from '@/types/challenge';
 import { ChallengeHeader } from './ChallengeHeader';
 import { ChallengeDescription } from './ChallengeDescription';
 import { CodeEditor } from './CodeEditor';
@@ -11,7 +11,7 @@ import { ProgressTracker } from './ProgressTracker';
 import { SuccessModal } from './SuccessModal';
 import { useTimer } from '@/hooks/useTimer';
 
-import type { TestResult } from '@/types/challenge';
+
 import { RewardBreakdown, submitSolution } from '@/actions/server/challenges/submit';
 
 
