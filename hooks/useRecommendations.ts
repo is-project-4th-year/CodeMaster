@@ -186,7 +186,7 @@ export function useRecommendations(userId: string, topN: number = 3) {
           const transformedChallenge = dbChallenge ? {
             id: dbChallenge.id.toString(),
             title: dbChallenge.name || 'Untitled Challenge',
-            difficulty: dbChallenge.rank_name || '8 kyu',
+            rank_name: dbChallenge.rank_name || '8 kyu',
             category: dbChallenge.category || 'reference',
             description: dbChallenge.description || '',
             tags: dbChallenge.tags || [],

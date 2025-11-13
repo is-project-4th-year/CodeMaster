@@ -60,6 +60,7 @@ export default function ChallengesPage() {
   } = useRecommendations(userId || '', 3);
 
   const recommendedChallenges = recommendations?.recommendations || [];
+  console.log('Recommended Challenges:', recommendedChallenges);
 
   // Show loading state
   if (isLoadingChallenges) {
