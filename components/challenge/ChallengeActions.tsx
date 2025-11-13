@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Trophy, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Play, Trophy, Loader2, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ChallengeActionsProps {
@@ -15,6 +15,8 @@ interface ChallengeActionsProps {
   testsPassed: number;
   testsTotal: number;
   submissionError?: string;
+  hasSubmitted?: boolean;
+  rewardsClaimed?: boolean;
 }
 
 export const ChallengeActions: React.FC<ChallengeActionsProps> = ({
@@ -26,7 +28,9 @@ export const ChallengeActions: React.FC<ChallengeActionsProps> = ({
   canSubmit,
   testsPassed,
   testsTotal,
-  submissionError
+  submissionError,
+  hasSubmitted = false,
+  rewardsClaimed = false
 }) => {
   return (
     <div className="border-t border-border bg-card">
@@ -37,6 +41,24 @@ export const ChallengeActions: React.FC<ChallengeActionsProps> = ({
         </Alert>
       )}
       
+      {hasSubmitted && (
+        <Alert className="m-4 mb-0 bg-green-50 border-green-200">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            Solution submitted! You can also review with our AI Concept Explainer.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {rewardsClaimed && !hasSubmitted && (
+        <Alert className="m-4 mb-0 bg-blue-50 border-blue-200">
+          <CheckCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            Rewards claimed! Now click Submit to finish .
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="p-4">
         <div className="flex items-center justify-between gap-3">
           <Button
@@ -47,7 +69,7 @@ export const ChallengeActions: React.FC<ChallengeActionsProps> = ({
             disabled={isRunning || isSubmitting}
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {hasSubmitted ? 'Continue' : 'Back'}
           </Button>
 
           <div className="flex items-center gap-3">
@@ -59,45 +81,61 @@ export const ChallengeActions: React.FC<ChallengeActionsProps> = ({
                 {testsPassed}/{testsTotal} Tests Passed
               </Badge>
             )}
-            
-            <Button
-              onClick={onRunTests}
-              disabled={isRunning || isSubmitting}
-              variant="outline"
-              className="gap-2"
-            >
-              {isRunning ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Running Tests...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Run Tests
-                </>
-              )}
-            </Button>
 
-            <Button
-              onClick={onSubmit}
-              disabled={!canSubmit || isSubmitting}
-              className="gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Trophy className="w-4 h-4" />
-                  Submit Solution
-                </>
-              )}
-            </Button>
+            {!hasSubmitted && (
+              <>
+                <Button
+                  onClick={onRunTests}
+                  disabled={isRunning || isSubmitting}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {isRunning ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Running Tests...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Run Tests
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={onSubmit}
+                  disabled={!canSubmit || isSubmitting}
+                  className="gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="w-4 h-4" />
+                      Submit Solution
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </div>
+
+        {!hasSubmitted && testsTotal > 0 && testsPassed < testsTotal && !rewardsClaimed && (
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            You can submit even if not all tests pass
+          </p>
+        )}
+
+        {!hasSubmitted && rewardsClaimed && (
+          <p className="text-xs text-green-600 font-medium mt-2 text-center">
+            ✓ Rewards claimed!
+          </p>
+        )}
       </div>
     </div>
   );

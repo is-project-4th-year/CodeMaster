@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Star, Zap, Clock, Target, Sparkles, Crown, Lightbulb, Coins, Share2 } from 'lucide-react';
+import { Trophy, Star, Zap, Clock, Target, Sparkles, Crown, Lightbulb, Coins } from 'lucide-react';
 import { Challenge } from '@/types/challenge';
 import confetti from 'canvas-confetti';
 
@@ -34,9 +34,9 @@ interface SuccessModalProps {
   };
   rewards?: RewardBreakdown;
   coinsEarned?: number;
-  onSubmit: () => void;
+  onClaim: () => void;
   onClose: () => void;
-  isSubmitting?: boolean;
+  allTestsPassed?: boolean;
 }
 
 export const SuccessModal: React.FC<SuccessModalProps> = ({
@@ -47,9 +47,9 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   submissionResult,
   rewards,
   coinsEarned = 0,
-  onSubmit,
+  onClaim,
   onClose,
-  isSubmitting = false
+  allTestsPassed = true
 }) => {
   const [open, setOpen] = useState(true);
 
@@ -93,7 +93,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
     return `${mins}m ${secs}s`;
   };
 
-  const isPerfect = attemptsCount === 1 && hintsUsed === 0;
+  const isPerfect = attemptsCount === 1 && hintsUsed === 0 && allTestsPassed;
   
   // Use rewards if available, otherwise fall back to submissionResult
   const totalXP = rewards?.totalXP || submissionResult?.xpGained || challenge.points;
@@ -103,20 +103,6 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   const handleClose = () => {
     setOpen(false);
     onClose();
-  };
-
-  const handleShare = () => {
-    const text = `I just solved "${challenge.name}" (${challenge.rank_name}) and earned ${totalXP} XP + ${coins} coins! 🎉`;
-    if (navigator.share) {
-      navigator.share({
-        title: 'Challenge Completed!',
-        text: text,
-      }).catch(() => {
-        navigator.clipboard.writeText(text);
-      });
-    } else {
-      navigator.clipboard.writeText(text);
-    }
   };
 
   return (
@@ -146,7 +132,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             ) : isPerfect ? (
               '🎉 Perfect Solve! 🎉'
             ) : (
-              '✨ Challenge Complete! ✨'
+              '✨ All Tests Passed! ✨'
             )}
           </DialogTitle>
           
@@ -165,13 +151,13 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg p-4 text-center hover:scale-105 transition-transform">
               <Star className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
               <p className="text-2xl font-bold text-yellow-500">+{totalXP}</p>
-              <p className="text-xs text-muted-foreground">XP Earned</p>
+              <p className="text-xs text-muted-foreground">XP to Earn</p>
             </div>
             
             <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4 text-center hover:scale-105 transition-transform">
               <Coins className="w-6 h-6 mx-auto mb-2 text-yellow-600" />
               <p className="text-2xl font-bold text-yellow-600">+{coins}</p>
-              <p className="text-xs text-muted-foreground">Coins Earned</p>
+              <p className="text-xs text-muted-foreground">Coins to Earn</p>
             </div>
           </div>
 
@@ -251,47 +237,18 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2">
-            {!submissionResult && (
-              <Button
-                onClick={onSubmit}
-                className="flex-1 gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Trophy className="w-4 h-4" />
-                    Claim Rewards
-                  </>
-                )}
-              </Button>
-            )}
-            
-            {submissionResult && (
-              <Button
-                onClick={handleClose}
-                className="flex-1 gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-              >
-                <Trophy className="w-4 h-4" />
-                Continue
-              </Button>
-            )}
-            
-            <Button
-              onClick={handleShare}
-              variant="outline"
-              size="icon"
-              title="Share your achievement"
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Action Button */}
+          <Button
+            onClick={onClaim}
+            className="w-full gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+          >
+            <Trophy className="w-4 h-4" />
+            Claim Rewards
+          </Button>
+          
+          <p className="text-xs text-center text-muted-foreground">
+            After claiming, click "Submit Solution" to save your progress and get an AI explanation
+          </p>
         </div>
       </DialogContent>
     </Dialog>

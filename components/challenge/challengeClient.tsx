@@ -9,11 +9,9 @@ import { TestResultsPanel } from './TestResultsPanel';
 import { ChallengeActions } from './ChallengeActions';
 import { ProgressTracker } from './ProgressTracker';
 import { SuccessModal } from './SuccessModal';
+import ConceptExplainer from './ConceptExplainer';
 import { useTimer } from '@/hooks/useTimer';
-
-
 import { RewardBreakdown, submitSolution } from '@/actions/server/challenges/submit';
-
 
 interface ChallengeClientProps {
   challenge: Challenge;
@@ -42,8 +40,10 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
     newLevel?: number;
     rewards: RewardBreakdown;
   }>();
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [allTestsPassed, setAllTestsPassed] = useState(false);
+  const [rewardsClaimed, setRewardsClaimed] = useState(false);
   
-  // Set minimal helpful template on mount - only run once
   useEffect(() => {
     const template = generateMinimalTemplate(challenge);
     setCode(template);
@@ -51,12 +51,11 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
 
     return () => pauseTimer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [challenge.id]); // Only depend on challenge.id, not the timer functions
+  }, [challenge.id]);
 
   const generateMinimalTemplate = (challenge: Challenge): string => {
     const lines: string[] = ['# Write your code here'];
 
-    // If solutions exist, try to extract function name
     if (challenge.solutions) {
       const solutionLines = challenge.solutions.split('\n');
       const defLine = solutionLines.find(line => line.trim().startsWith('def '));
@@ -78,7 +77,6 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
       }
     }
 
-    // Default fallback
     lines.push(`\n# Your solution starts below\n`);
     return lines.join('\n');
   };
@@ -117,8 +115,12 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
       const passed = results.filter((r: TestResult) => r.passed).length;
       setAttemptsCount(prev => prev + 1);
       
-      // Show success modal if all tests passed
-      if (passed === results.length) {
+      // Check if all tests passed
+      const allPassed = passed === results.length;
+      setAllTestsPassed(allPassed);
+      
+      // Show success modal only if all tests passed
+      if (allPassed) {
         setShowSuccess(true);
         pauseTimer();
       }
@@ -139,18 +141,29 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!showSuccess) return;
+    // Require rewards to be claimed first
+    if (!rewardsClaimed) {
+      setSubmissionError('Please claim your rewards first by clicking the button in the success modal');
+      return;
+    }
+    
+    // Allow submission even if not all tests passed
+    if (testResults.length === 0) {
+      setSubmissionError('Please run tests before submitting');
+      return;
+    }
     
     setIsSubmitting(true);
     setSubmissionError(undefined);
     
     try {
-      const isPerfectSolve = attemptsCount === 1 && hintsUsed === 0;
+      const isPerfectSolve = attemptsCount === 1 && hintsUsed === 0 && allTestsPassed;
+      const testsPassed = testResults.filter(r => r.passed).length;
       
       const result = await submitSolution({
         challengeId: parseInt(challenge.id),
         code,
-        testsPassed: testResults.filter(r => r.passed).length,
+        testsPassed,
         testsTotal: testResults.length,
         timeElapsed: time,
         hintsUsed,
@@ -162,16 +175,16 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
         return;
       }
       
-      // Store submission result to show in modal
       if (result.data) {
         setSubmissionResult(result.data);
       }
       
-      // Wait a bit to show the rewards, then navigate
-      setTimeout(() => {
-        router.push('/challenges');
-        router.refresh();
-      }, 3000);
+      // Mark as submitted to show AI explainer
+      setHasSubmitted(true);
+      
+      // Pause timer after submission
+      pauseTimer();
+      
     } catch (error) {
       console.error('Submission error:', error);
       setSubmissionError(
@@ -185,6 +198,16 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
   const handleShowHints = () => {
     setShowHints(true);
     setHintsUsed(prev => prev + 1);
+  };
+
+  const handleContinue = () => {
+    router.push('/challenges');
+    router.refresh();
+  };
+
+  const handleClaimRewards = () => {
+    setRewardsClaimed(true);
+    setShowSuccess(false);
   };
 
   const testsPassed = testResults.filter(r => r.passed).length;
@@ -217,6 +240,16 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
             {testResults.length > 0 && (
               <TestResultsPanel results={testResults} />
             )}
+
+            {/* AI Concept Explainer - Shows after submission */}
+            {hasSubmitted && (
+              <ConceptExplainer
+                challengeName={challenge.name}
+                challengeDescription={challenge.description}
+                challengeTags={challenge.tags || []}
+                userCode={code}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -232,18 +265,20 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
         <ChallengeActions
           onRunTests={handleRunTests}
           onSubmit={handleSubmit}
-          onSkip={() => router.push('/challenges')}
+          onSkip={handleContinue}
           isRunning={isRunning}
           isSubmitting={isSubmitting}
-          canSubmit={showSuccess}
+          canSubmit={testResults.length > 0 && !hasSubmitted && rewardsClaimed} // Can submit after claiming rewards
           testsPassed={testsPassed}
           testsTotal={testsTotal}
           submissionError={submissionError}
+          hasSubmitted={hasSubmitted}
+          rewardsClaimed={rewardsClaimed}
         />
       </div>
 
-      {/* Success Modal */}
-      {showSuccess && (
+      {/* Success Modal - Only shows when ALL tests pass */}
+      {showSuccess && !hasSubmitted && (
         <SuccessModal
           challenge={challenge}
           timeElapsed={time}
@@ -251,9 +286,9 @@ export const ChallengeClient: React.FC<ChallengeClientProps> = ({
           attemptsCount={attemptsCount}
           submissionResult={submissionResult}
           rewards={submissionResult?.rewards}
-          onSubmit={handleSubmit}
+          onClaim={handleClaimRewards}
           onClose={() => setShowSuccess(false)}
-          isSubmitting={isSubmitting}
+          allTestsPassed={allTestsPassed}
         />
       )}
     </div>
