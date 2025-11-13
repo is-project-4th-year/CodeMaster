@@ -247,13 +247,7 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
                     <p className="text-xs text-muted-foreground">Day Streak</p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Coins className="w-6 h-6 mx-auto mb-1 text-blue-500" />
-                    <p className="text-2xl font-bold">{profile.coins}</p>
-                    <p className="text-xs text-muted-foreground">Coins</p>
-                  </CardContent>
-                </Card>
+              
                 <Card>
                   <CardContent className="p-4 text-center">
                     <Star className="w-6 h-6 mx-auto mb-1 text-purple-500" />
