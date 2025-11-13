@@ -137,7 +137,6 @@ export async function getUserGrowthData(
 
     const adminClient = createAdminClient();
 
-    // Get all users with their created_at and last_login
     const { data: users, error } = await adminClient
       .from('user_profiles')
       .select('created_at, last_login');
