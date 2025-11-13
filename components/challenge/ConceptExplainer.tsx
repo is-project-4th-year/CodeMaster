@@ -106,6 +106,7 @@ Keep explanations clear, encouraging, and educational. Use markdown formatting w
                 onChunk(fullText);
               }
             } catch (e: unknown) {
+                console.error("Error parsing chunk:", e);
               continue;
             }
           }
