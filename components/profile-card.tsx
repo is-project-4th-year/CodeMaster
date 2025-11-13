@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  BarChart3, Calendar, CheckCircle2, Coins, Flame, Loader2, 
+  BarChart3, Calendar, CheckCircle2, Flame, Loader2, 
   Settings,  Star, Trophy, Edit
 } from "lucide-react";
 
