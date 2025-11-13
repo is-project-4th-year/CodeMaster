@@ -128,7 +128,7 @@ export async function getSystemReportsSummary(
  * Get user growth data over time
  */
 export async function getUserGrowthData(
-  dateRange: string = 'last_30_days'
+
 ): Promise<UserGrowthData[] | null> {
 
   try {
@@ -320,7 +320,7 @@ export async function getTopPerformers(): Promise<TopPerformer[] | null> {
 
     // Get emails for these users
     const userIds = profiles.map(p => p.user_id);
-    const { data: { users: authUsers }, error: authError } = 
+    const { data: { users: authUsers } } = 
       await adminClient.auth.admin.listUsers();
 
     const emailMap = new Map(
