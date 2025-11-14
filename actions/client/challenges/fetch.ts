@@ -1,8 +1,9 @@
+import { getRequiredLevelForChallenge } from "@/lib/challenge-levels";
 import { createClient } from "@/lib/supabase/client";
 
 import { Challenge } from "@/types/challenge";
 
-export async function fetchChallenges(): Promise<Challenge[]> {
+export async function fetchChallenges(userLevel: number = 1): Promise<Challenge[]> {
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -19,7 +20,19 @@ export async function fetchChallenges(): Promise<Challenge[]> {
     return [];
   }
 
-  return data as Challenge[];
+  // Apply level-based locking
+  const challengesWithLevelLocking = data.map(challenge => {
+    const requiredLevel = getRequiredLevelForChallenge(challenge.rank_name);
+    const isUnlocked = userLevel >= requiredLevel;
+    
+    return {
+      ...challenge,
+      is_locked: !isUnlocked,
+      required_level: requiredLevel
+    };
+  });
+
+  return challengesWithLevelLocking as Challenge[];
 }
 
 /**
@@ -133,7 +146,11 @@ export async function fetchTestCases(challengeId: string) {
 /**
  * Increment solved count when user completes challenge
  */
-export async function fetchChallengesPaginated(page: number, pageSize: number = 9): Promise<{ data: Challenge[], totalCount: number }> {
+export async function fetchChallengesPaginated(
+  page: number, 
+  pageSize: number = 9,
+  userLevel: number = 1 // Add user level parameter
+): Promise<{ data: Challenge[], totalCount: number }> {
   const supabase = createClient();
   
   // Calculate range for pagination
@@ -162,8 +179,20 @@ export async function fetchChallengesPaginated(page: number, pageSize: number = 
     throw error;
   }
 
+  // Apply level-based locking dynamically
+  const challengesWithLevelLocking = (data as Challenge[] || []).map(challenge => {
+    const requiredLevel = getRequiredLevelForChallenge(challenge.rank_name);
+    const isUnlocked = userLevel >= requiredLevel;
+    
+    return {
+      ...challenge,
+      is_locked: !isUnlocked,
+      required_level: requiredLevel
+    };
+  });
+
   return {
-    data: data as Challenge[] || [],
+    data: challengesWithLevelLocking,
     totalCount: count || 0
   };
 }

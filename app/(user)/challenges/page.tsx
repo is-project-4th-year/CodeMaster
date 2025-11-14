@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChallengeCard } from '@/components/ChallengeCard';
 import { RecommendedChallengeCard } from '@/components/RecommendedChallengeCard';
-import { AlertCircle, Sparkles, Info, Loader2 } from 'lucide-react';
+import { AlertCircle, Sparkles, Info, Loader2, Crown, Target, TrendingUp, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Challenge } from '@/types/challenge';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -20,6 +20,7 @@ import {
 
 import { createClient } from '@/lib/supabase/client';
 import { fetchChallengesPaginated } from '@/actions/client';
+import { LevelProgressionInfo } from '@/components/LevelProgressionInfo';
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 9;
@@ -27,6 +28,7 @@ const ITEMS_PER_PAGE = 9;
 export default function ChallengesPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userLevel, setUserLevel] = useState<number>(1);
   const [isLoadingChallenges, setIsLoadingChallenges] = useState(true);
   const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,27 +38,41 @@ export default function ChallengesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Get user ID from auth
+  // Get user ID and level from auth
   useEffect(() => {
-    async function getUserId() {
+    async function getUserData() {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         setUserId(user?.id ?? null);
+        
+        // Fetch user level from profile
+        if (user) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('level, total_solved, success_rate')
+            .eq('user_id', user.id)
+            .single();
+            
+          setUserLevel(profile?.level || 1);
+        }
       } catch (err) {
-        console.error('Error getting user:', err);
+        console.error('Error getting user data:', err);
       }
     }
-    getUserId();
+    getUserData();
   }, []);
 
-  // Fetch paginated challenges
+  // Fetch paginated challenges with user level
   useEffect(() => {
     async function loadChallenges() {
       try {
         setIsLoadingChallenges(true);
-        const { data, totalCount: count } = await fetchChallengesPaginated(currentPage, ITEMS_PER_PAGE);
-        console.log('Fetched challenges:', data);
+        const { data, totalCount: count } = await fetchChallengesPaginated(
+          currentPage, 
+          ITEMS_PER_PAGE,
+          userLevel
+        );
         setChallenges(data);
         setTotalCount(count);
         setTotalPages(Math.ceil(count / ITEMS_PER_PAGE));
@@ -68,7 +84,7 @@ export default function ChallengesPage() {
       }
     }
     loadChallenges();
-  }, [currentPage]);
+  }, [currentPage, userLevel]);
 
   const { 
     recommendations, 
@@ -81,17 +97,20 @@ export default function ChallengesPage() {
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Show loading for recommended section during pagination
     setIsLoadingRecommended(true);
     
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Hide loading after a short delay (simulates loading state)
+    // Hide loading after a short delay
     setTimeout(() => {
       setIsLoadingRecommended(false);
     }, 500);
   };
+
+  // Calculate unlocked vs locked challenges
+  const unlockedChallenges = challenges.filter(c => !c.is_locked);
+  const lockedChallenges = challenges.filter(c => c.is_locked);
 
   // Show loading state for initial page load
   if (isLoadingChallenges && currentPage === 1) {
@@ -110,10 +129,18 @@ export default function ChallengesPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Browse Challenges</h1>
-          <p className="text-muted-foreground">Choose your next coding adventure</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+              <Target className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">Browse Challenges</h1>
+          </div>
+          <p className="text-muted-foreground">
+            Choose your next coding adventure. Challenges unlock as you level up!
+          </p>
         </div>
 
+      
         {/* Error Alert */}
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -122,37 +149,29 @@ export default function ChallengesPage() {
           </Alert>
         )}
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
-                All
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Fundamentals
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Algorithms
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Data Structures
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Bug Fixes
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Easy (8-7 kyu)
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Medium (6-5 kyu)
-              </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-secondary">
-                Hard (4-1 kyu)
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Stats */}
+        {userId && (
+          <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-yellow-500" />
+                  <span>Level <strong>{userLevel}</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <span><strong>{unlockedChallenges.length}</strong> challenges available</span>
+                </div>
+                {lockedChallenges.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-orange-500" />
+                    <span><strong>{lockedChallenges.length}</strong> locked (level up to unlock)</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recommended Challenges Section */}
         {userId && (
@@ -194,7 +213,6 @@ export default function ChallengesPage() {
                   </div>
                 </div>
                 
-                {/* Show loading overlay for recommended section during pagination */}
                 {isLoadingRecommended ? (
                   <div className="relative">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-50">
@@ -223,13 +241,12 @@ export default function ChallengesPage() {
                   </div>
                 ) : (
                   <>
-                    {/* User Profile Info */}
                     {recommendations?.userProfile && (
                       <Alert className="mb-4 border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
                         <Info className="h-4 w-4 text-blue-600" />
                         <AlertDescription className="text-blue-800 dark:text-blue-200">
                           <div className="flex flex-wrap gap-4 text-sm">
-                            <span>Level: <strong className="capitalize">{recommendations.userProfile.experience_level}</strong></span>
+                            <span>Level: <strong>{userLevel}</strong></span>
                             <span>•</span>
                             <span>Success Rate: <strong>{(recommendations.userProfile.success_rate * 100).toFixed(0)}%</strong></span>
                             <span>•</span>
@@ -249,7 +266,7 @@ export default function ChallengesPage() {
                       <Info className="h-4 w-4 text-yellow-600" />
                       <AlertDescription className="text-yellow-800 dark:text-yellow-200">
                         These challenges are personalized based on your solving history, difficulty level, 
-                        and learning patterns.
+                        and learning patterns. Focus on these to level up efficiently!
                       </AlertDescription>
                     </Alert>
 
@@ -279,16 +296,15 @@ export default function ChallengesPage() {
 
         {/* All Challenges Section */}
         <div>
-          {recommendedChallenges.length > 0 && (
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">All Challenges</h2>
-                <p className="text-muted-foreground">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} challenges
-                </p>
-              </div>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">All Challenges</h2>
+              <p className="text-muted-foreground">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} challenges
+                {userId && ` • ${unlockedChallenges.length} unlocked, ${lockedChallenges.length} locked`}
+              </p>
             </div>
-          )}
+          </div>
 
           {challenges.length === 0 && recommendedChallenges.length === 0 && !error ? (
             <div className="text-center py-12">
@@ -320,14 +336,39 @@ export default function ChallengesPage() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {challenges.map((challenge) => (
-                    <ChallengeCard 
-                      key={challenge.id} 
-                      challenge={challenge}
-                    />
-                  ))}
-                </div>
+                <>
+                  {/* Unlocked Challenges */}
+                  {unlockedChallenges.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                      {unlockedChallenges.map((challenge) => (
+                        <ChallengeCard 
+                          key={challenge.id} 
+                          challenge={challenge}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Locked Challenges */}
+                  {lockedChallenges.length > 0 && (
+                    <div className="mb-8">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Lock className="w-5 h-5 text-orange-500" />
+                        <h3 className="text-xl font-semibold text-orange-600">
+                          Locked Challenges (Level Up to Unlock)
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
+                        {lockedChallenges.map((challenge) => (
+                          <ChallengeCard 
+                            key={challenge.id} 
+                            challenge={challenge}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Pagination */}
@@ -336,12 +377,12 @@ export default function ChallengesPage() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious 
-                      href="#" 
-                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        e.preventDefault();
-                        if (currentPage > 1) handlePageChange(currentPage - 1);
-                      }}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        href="#" 
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                          e.preventDefault();
+                          if (currentPage > 1) handlePageChange(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
 
@@ -351,8 +392,8 @@ export default function ChallengesPage() {
                         <PaginationLink
                           href="#"
                           onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                          e.preventDefault();
-                          handlePageChange(page);
+                            e.preventDefault();
+                            handlePageChange(page);
                           }}
                           isActive={currentPage === page}
                         >
@@ -363,12 +404,12 @@ export default function ChallengesPage() {
 
                     <PaginationItem>
                       <PaginationNext 
-                      href="#"
-                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        e.preventDefault();
-                        if (currentPage < totalPages) handlePageChange(currentPage + 1);
-                      }}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        href="#"
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
                   </PaginationContent>
