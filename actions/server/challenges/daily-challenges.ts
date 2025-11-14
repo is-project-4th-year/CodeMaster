@@ -83,7 +83,7 @@ export async function fetchDailyChallengeHistory(page: number = 1, pageSize: num
 
     const formattedHistory = history?.map(item => ({
       challenge_date: item.challenge_date,
-      challenge: item.challenges as Challenge,
+      challenge: (Array.isArray(item.challenges) ? item.challenges[0] : item.challenges) as Challenge,
       bonus_points: item.bonus_points
     })) || [];
 
