@@ -185,7 +185,7 @@ export function useRecommendations(userId: string, topN: number = 3) {
           // Transform database format to Challenge type
           const transformedChallenge = dbChallenge ? {
             id: dbChallenge.id.toString(),
-            title: dbChallenge.name || 'Untitled Challenge',
+            name: dbChallenge.name || 'Untitled Challenge',
             rank_name: dbChallenge.rank_name || '8 kyu',
             category: dbChallenge.category || 'reference',
             description: dbChallenge.description || '',

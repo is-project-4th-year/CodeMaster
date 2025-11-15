@@ -23,21 +23,17 @@ interface RecommendedChallengeCardProps {
 
 export const RecommendedChallengeCard: React.FC<RecommendedChallengeCardProps> = ({ 
   challenge, 
-
+  score,
   reasons,
-
+  topic,
   details 
 }) => {
-
-
   const getDifficultyColor = (rank_name: string) => {
     if (rank_name.includes('8 kyu') || rank_name.includes('7 kyu')) return 'bg-green-500';
     if (rank_name.includes('6 kyu') || rank_name.includes('5 kyu')) return 'bg-yellow-500';
     return 'bg-red-500';
   };
-
-
-
+console.log('RecommendedChallengeCard', { challenge, score, reasons, topic, details });
   // Extract plain text preview from description (HTML or Markdown)
   const descriptionPreview = useMemo(() => {
     if (!challenge.description) return '';
@@ -70,24 +66,37 @@ export const RecommendedChallengeCard: React.FC<RecommendedChallengeCardProps> =
     }
   };
 
+  const getLockMessage = () => {
+    if (challenge.required_level) {
+      return `Locked (Level ${challenge.required_level}+)`;
+    }
+    return 'Locked';
+  };
+
   return (
     <Card className={`flex flex-col hover:shadow-lg transition-all cursor-pointer ${challenge.is_locked ? 'opacity-60' : ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-             
-              <Badge variant="outline">{challenge.category}</Badge>
-
+              <Badge className={`${getDifficultyColor(challenge.rank_name)} text-white`}>
+                {challenge.rank_name}
+              </Badge>
+      
               <Badge className="bg-primary text-white shadow-lg">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Recommended
               </Badge>
+
+          
             </div>
+            
+            {/* FIXED: Added challenge name to CardTitle */}
             <CardTitle className="text-lg flex items-center gap-2">
               {challenge.is_locked && <Lock className="w-4 h-4" />}
               {challenge.name}
             </CardTitle>
+            
             <CardDescription className="mt-1 line-clamp-2">
               {descriptionPreview}
             </CardDescription>
@@ -97,13 +106,12 @@ export const RecommendedChallengeCard: React.FC<RecommendedChallengeCardProps> =
               <Trophy className="w-4 h-4" />
               {challenge.points}
             </div>
+         
           </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col flex-1">
         <div className="space-y-3">
-      
-
           {/* Why Recommended */}
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -151,6 +159,7 @@ export const RecommendedChallengeCard: React.FC<RecommendedChallengeCardProps> =
               ))}
             </div>
           )}
+          
           {/* Stats */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
@@ -165,16 +174,18 @@ export const RecommendedChallengeCard: React.FC<RecommendedChallengeCardProps> =
             )}
           </div>
         </div>
+        
         {/* Action Button */}
         <Button 
           onClick={handleStartChallenge} 
           disabled={challenge.is_locked}
-          className="mt-auto w-full"
+          className="mt-auto w-full transition-all"
+          variant={challenge.is_locked ? "outline" : "default"}
         >
           {challenge.is_locked ? (
             <>
               <Lock className="w-4 h-4 mr-2" />
-              Locked (Level {challenge.required_level})
+              {getLockMessage()}
             </>
           ) : (
             <>
