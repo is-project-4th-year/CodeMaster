@@ -119,35 +119,7 @@ export default async function AdminChallengesPage({ searchParams }: PageProps) {
         </div>
       )}
 
-      {/* Most Solved Challenges */}
-      {stats && stats.mostSolved.length > 0 && (
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Most Solved Challenges
-            </h3>
-            <div className="space-y-2">
-              {stats.mostSolved.map((challenge, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                      index === 0 ? 'bg-yellow-500 text-white' :
-                      index === 1 ? 'bg-gray-400 text-white' :
-                      index === 2 ? 'bg-orange-600 text-white' :
-                      'bg-muted'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <span className="font-medium">{challenge.name}</span>
-                  </div>
-                  <Badge variant="outline">{challenge.solved_count} solves</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+  
 
       {/* Challenges List */}
       <Card>

@@ -1,13 +1,10 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
-
-
 import { mapDifficultyToRank } from "@/lib/mapDifficultyToRank";
 import { calculatePoints } from "@/lib/calculatePoints";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkAdminRole } from "../admin";
-
 
 export async function createChallenge(
   challengeData: {
@@ -32,8 +29,6 @@ export async function createChallenge(
     }>;
   }
 ): Promise<{ success: boolean; error?: string; challengeId?: string }> {
-
-  
   try {
     const isAdmin = await checkAdminRole();
     if (!isAdmin) {
@@ -51,8 +46,8 @@ export async function createChallenge(
 
     const difficulty = difficultyMap[challengeData.rank_name.toLowerCase()] || difficultyMap['easy'];
     
-    // Prepare exercise data
-    const exerciseData = {
+    // Prepare challenge data
+    const challengeDataToInsert = {
       name: challengeData.name,
       category: challengeData.category,
       description: challengeData.description,
@@ -69,45 +64,40 @@ export async function createChallenge(
       updated_at: new Date().toISOString()
     };
 
-
-    const { data: exercise, error: exerciseError } = await adminClient
-      .from('exercises')
-      .insert([exerciseData])
+    // Insert into challenges table
+    const { data: challenge, error: challengeError } = await adminClient
+      .from('challenges')
+      .insert([challengeDataToInsert])
       .select()
       .single();
 
-    if (exerciseError) {
-      console.error('❌ Error creating exercise:', exerciseError);
-      return { success: false, error: exerciseError.message };
+    if (challengeError) {
+      console.error('❌ Error creating challenge:', challengeError);
+      return { success: false, error: challengeError.message };
     }
 
-    const exerciseId = exercise.id;
-  
+    const challengeId = challenge.id;
 
     // Insert tags
     if (challengeData.tags && challengeData.tags.length > 0) {
-    
       const tagInserts = challengeData.tags.map(tag => ({
-        exercise_id: exerciseId,
+        challenge_id: challengeId,
         tag: tag
       }));
 
       const { error: tagsError } = await adminClient
-        .from('exercise_tags')
+        .from('challenge_tags')
         .insert(tagInserts);
 
       if (tagsError) {
-        console.warn(' Error inserting tags:', tagsError);
-      } else {
-     
+        console.warn('⚠️ Error inserting tags:', tagsError);
       }
     }
 
     // Insert test cases
     if (challengeData.test_cases && challengeData.test_cases.length > 0) {
-   
       const testCaseInserts = challengeData.test_cases.map((tc, index) => ({
-        exercise_id: exerciseId,
+        challenge_id: challengeId,
         input: tc.input,
         expected_output: tc.expected_output,
         description: tc.description || `Test case ${index + 1}`,
@@ -121,40 +111,35 @@ export async function createChallenge(
 
       if (testCasesError) {
         console.warn('⚠️ Error inserting test cases:', testCasesError);
-      } else {
-      
       }
     }
 
     // Insert daily challenge if applicable
     if (challengeData.is_daily_challenge) {
-
       const { error: dailyChallengeError } = await adminClient
         .from('daily_challenges')
         .insert([{
-          exercise_id: exerciseId,
+          challenge_id: challengeId,
           challenge_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
           bonus_points: challengeData.daily_bonus_points || 50
         }]);
 
       if (dailyChallengeError) {
-        console.warn(' Error creating daily challenge:', dailyChallengeError);
-      } else {
-     
+        console.warn('⚠️ Error creating daily challenge:', dailyChallengeError);
       }
     }
 
-  
     revalidatePath('/admin/challenges');
-    return { success: true, challengeId: exerciseId.toString() };
+    return { success: true, challengeId: challengeId.toString() };
   } catch (error) {
-
+    console.error('❌ Unexpected error in createChallenge:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }
+
 export async function addTestCase(
   testCaseData: {
-    exercise_id: string;
+    challenge_id: string;
     input: string;
     expected_output: string;
     is_hidden: boolean;
@@ -162,8 +147,6 @@ export async function addTestCase(
     description?: string;
   }
 ): Promise<{ success: boolean; error?: string }> {
- 
-  
   try {
     const isAdmin = await checkAdminRole();
     if (!isAdmin) {
@@ -177,15 +160,14 @@ export async function addTestCase(
       .insert([testCaseData]);
 
     if (error) {
-      console.error(' Error adding test case:', error);
+      console.error('❌ Error adding test case:', error);
       return { success: false, error: error.message };
     }
 
-  
     revalidatePath('/admin/challenges');
     return { success: true };
   } catch (error) {
-    console.error(' Unexpected error in addTestCase:', error);
+    console.error('❌ Unexpected error in addTestCase:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import UserLayoutClient from '@/components/user-layout-client';
 import { fetchLayoutUserData, getInProgressCount } from '@/actions';
+import { Toaster } from '@/components/ui/sonner';
 
 
 
@@ -27,6 +28,7 @@ export default async function UserLayout({ children }: LayoutProps) {
       inProgressCount={inProgressCount}
     >
       {children}
+      <Toaster />
     </UserLayoutClient>
   );
 }
