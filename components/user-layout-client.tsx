@@ -5,7 +5,8 @@ import {
   Home, Code, Trophy, 
   Settings, Search, Flame, Star, Crown, Sparkles,
   Menu, X, TrendingUp,
-  Rocket, MenuIcon, Gift, User, LogOut
+  Rocket, MenuIcon, Gift, User, LogOut,
+  ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -162,6 +163,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   const [showBonusModal, setShowBonusModal] = useState(false);
   const [bonusReward, setBonusReward] = useState<{ xp: number; streak: number; type: string } | null>(null);
+  const [statsExpanded, setStatsExpanded] = useState(false);
   
   const { levelUp, celebrate } = useConfetti();
 
@@ -422,79 +424,97 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
 
         {/* Scrollable Content Area */}
         <div className="flex flex-col h-[calc(100vh-5rem)] overflow-hidden">
-          {/* User Stats Card */}
+          {/* Minimizable User Stats Card */}
           {!sidebarCollapsed && (
-            <div className="p-4 mx-4 mt-4 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/50 dark:to-slate-800/30 rounded-xl border border-slate-300 dark:border-slate-700 backdrop-blur-sm shadow-lg dark:shadow-none shrink-0">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-2xl shadow-lg overflow-hidden">
-                    {isImageAvatar ? (
-                      <Image
-                        src={userData.avatar}
-                        alt="User Avatar"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <span>{userData.avatar || '👤'}</span>
-                    )}
+            <div className="shrink-0">
+              {/* Stats Header - Always Visible */}
+              <div 
+                className="flex items-center justify-between p-4 mx-4 mt-4 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/50 dark:to-slate-800/30 rounded-xl border border-slate-300 dark:border-slate-700 backdrop-blur-sm shadow-lg dark:shadow-none cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-all"
+                onClick={() => setStatsExpanded(!statsExpanded)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-xl shadow-lg overflow-hidden">
+                      {isImageAvatar ? (
+                        <Image
+                          src={userData.avatar}
+                          alt="User Avatar"
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span>{userData.avatar || '👤'}</span>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+                      <Crown className="w-2.5 h-2.5 text-white" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
-                    <Crown className="w-3 h-3 text-white" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900 dark:text-white truncate text-sm">{userData.name}</p>
+                    <div className="flex items-center gap-1">
+                      <Badge className={`text-white border-0 text-xs px-2 py-0 shadow-md ${
+                        userData.rank === 'Platinum' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' :
+                        userData.rank === 'Diamond' ? 'bg-gradient-to-r from-blue-400 to-indigo-400' :
+                        userData.rank === 'Gold' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                        userData.rank === 'Silver' ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                        'bg-gradient-to-r from-orange-700 to-orange-800'
+                      }`}>
+                        {userData.rank}
+                      </Badge>
+                      <span className="text-xs text-slate-600 dark:text-slate-400">Rank</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white truncate">{userData.name}</p>
-                  <div className="flex items-center gap-1">
-                    <Badge className={`text-white border-0 text-xs px-2 py-0 shadow-md ${
-                      userData.rank === 'Platinum' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' :
-                      userData.rank === 'Diamond' ? 'bg-gradient-to-r from-blue-400 to-indigo-400' :
-                      userData.rank === 'Gold' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                      userData.rank === 'Silver' ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
-                      'bg-gradient-to-r from-orange-700 to-orange-800'
-                    }`}>
-                      {userData.rank}
-                    </Badge>
-                    <span className="text-xs text-slate-600 dark:text-slate-400">Rank</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* XP Bar */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                    <Star className="w-3 h-3 text-yellow-500" />
-                    Level {userData.level}
-                  </span>
-                  <span className="text-slate-600 dark:text-slate-400">{userData.currentXP}/{userData.xpToNextLevel} XP</span>
-                </div>
-                <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500"
-                    style={{ width: `${xpPercentage}%` }}
-                  />
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-slate-500 dark:text-slate-400"
+                >
+                  {statsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
               </div>
 
-              {/* Streak & Currency */}
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
-                  <Flame className="w-4 h-4 text-orange-500 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.streak}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Streak</p>
+              {/* Expandable Stats Content */}
+              {statsExpanded && (
+                <div className="p-4 mx-4 mt-2 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/50 dark:to-slate-800/30 rounded-xl border border-slate-300 dark:border-slate-700 backdrop-blur-sm shadow-lg dark:shadow-none">
+                  {/* XP Bar */}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-500" />
+                        Level {userData.level}
+                      </span>
+                      <span className="text-slate-600 dark:text-slate-400">{userData.currentXP}/{userData.xpToNextLevel} XP</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                        style={{ width: `${xpPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Streak & Currency */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
+                      <Flame className="w-4 h-4 text-orange-500 mx-auto mb-1" />
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.streak}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Streak</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
+                      <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.totalPoints || 0}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Points</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
-                  <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.totalPoints || 0}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Points</p>
-                </div>
-              </div>
+              )}
             </div>
           )}
 

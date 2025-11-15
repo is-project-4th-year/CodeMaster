@@ -10,8 +10,14 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Codemaster - The way to learn coding",
+  description: "Codemaster is a platform that offers coding challenges to help you improve your programming skills. Solve problems, earn points, and climb the leaderboard!",
+  openGraph: {
+    title: "Codemaster - The way to learn coding",
+    description: "Codemaster is a platform that offers coding challenges to help you improve your programming skills. Solve problems, earn points, and climb the leaderboard!",
+    url: defaultUrl,
+    siteName: "Codemaster",
+  }
 };
 
 const geistSans = Geist({
