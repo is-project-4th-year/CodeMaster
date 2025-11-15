@@ -87,7 +87,30 @@ export default function ChallengesListClient({
 
   // Helpers
   const categories = Array.from(new Set(challenges.map(c => c.category)));
-
+const toggleLockStatus = async (challengeId: string, currentStatus: boolean) => {
+  try {
+    setIsLoading(true);
+    
+    // Import the updateChallenge function
+    const { updateChallenge } = await import('@/actions');
+    
+    const result = await updateChallenge(challengeId, {
+      is_locked: !currentStatus
+    });
+    
+    if (result.success) {
+      toast.success(`Challenge ${!currentStatus ? 'locked' : 'unlocked'} successfully`);
+      router.refresh(); // Refresh the data
+    } else {
+      toast.error(result.error || `Failed to ${!currentStatus ? 'lock' : 'unlock'} challenge`);
+    }
+  } catch (error) {
+    toast.error('An error occurred');
+    console.error('Error toggling lock status:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const updateFilters = (search?: string, category?: string, difficulty?: string) => {
     setIsLoading(true);
     
@@ -507,21 +530,28 @@ export default function ChallengesListClient({
                       <TooltipContent>Edit</TooltipContent>
                     </Tooltip>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          {challenge.is_locked ? (
-                            <Unlock className="w-4 h-4" />
-                          ) : (
-                            <Lock className="w-4 h-4" />
-                          )}
-                          <span className="sr-only">
-                            {challenge.is_locked ? 'Unlock' : 'Lock'}
-                          </span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{challenge.is_locked ? 'Unlock' : 'Lock'}</TooltipContent>
-                    </Tooltip>
+                  <Tooltip>
+  <TooltipTrigger asChild>
+    <Button 
+      variant="ghost" 
+      size="icon"
+      onClick={() => toggleLockStatus(challenge.id, challenge.is_locked)}
+      disabled={isLoading}
+    >
+      {challenge.is_locked ? (
+        <Unlock className="w-4 h-4" />
+      ) : (
+        <Lock className="w-4 h-4" />
+      )}
+      <span className="sr-only">
+        {challenge.is_locked ? 'Unlock' : 'Lock'}
+      </span>
+    </Button>
+  </TooltipTrigger>
+  <TooltipContent>
+    {challenge.is_locked ? 'Unlock Challenge' : 'Lock Challenge'}
+  </TooltipContent>
+</Tooltip>
 
                     <Tooltip>
                       <TooltipTrigger asChild>

@@ -6,20 +6,16 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 import { 
   LayoutDashboard, 
   Plus, 
   Users, 
   Code, 
   Settings, 
-
   Menu,
   X,
   Crown,
-  LogOut,
   User,
-
   FileText,
   LucideIcon
 } from 'lucide-react';
@@ -33,7 +29,7 @@ import {
   DropdownMenuItem 
 } from '@/components/ui/dropdown-menu';
 import { AdminStats, getAdminStats, getAdminUserInfo } from '@/actions';
-
+import { LogoutButton } from '@/components/logout-button'; // Import the LogoutButton
 
 interface NavigationItem {
   label: string;
@@ -148,7 +144,6 @@ export default function AdminLayoutClient({
     {
       title: 'System',
       items: [
-      
         { 
           label: 'Profile', 
           href: '/admin/profile', 
@@ -271,13 +266,8 @@ export default function AdminLayoutClient({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600" asChild>
-                  <form action="/auth/signout" method="post">
-                    <button type="submit" className="flex items-center w-full">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </button>
-                  </form>
+                <DropdownMenuItem className="text-red-600 cursor-pointer">
+                  <LogoutButton />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

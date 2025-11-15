@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Home, Code, Trophy, 
-  Settings, Bell, Search, Flame, Star, Crown, Sparkles,
+  Settings, Search, Flame, Star, Crown, Sparkles,
   Menu, X, TrendingUp,
-  Rocket, MenuIcon, Gift
+  Rocket, MenuIcon, Gift, User, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useConfetti } from '@/contexts/confetti-context';
 import Lottie from 'lottie-react';
 import dailyBonusAnimation from '@/lottie/gift_box.json'; 
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 type UserLayoutClientProps = {
   children: React.ReactNode;
@@ -119,6 +129,28 @@ const DailyBonusModal: React.FC<DailyBonusModalProps> = ({
     </div>
   );
 };
+
+// Logout Button Component
+function LogoutButton() {
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/");
+  };
+
+  return (
+    <div 
+      onClick={handleLogout}
+      className="flex items-center w-full cursor-pointer"
+    >
+      <LogOut className="mr-2 h-4 w-4" />
+      <span>Log out</span>
+    </div>
+  );
+}
 
 const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutClientProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -615,30 +647,57 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
                 </div>
               </div>
 
-              {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-              </Button>
-
-              {/* Avatar (Mobile) */}
-              <div className="lg:hidden w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg overflow-hidden">
-                {isImageAvatar ? (
-                  <Image
-                    src={userData.avatar}
-                    alt="User Avatar"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <span className="text-sm">{userData.avatar || '👤'}</span>
-                )}
-              </div>
+              {/* User Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg overflow-hidden">
+                      {isImageAvatar ? (
+                        <Image
+                          src={userData.avatar}
+                          alt="User Avatar"
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-sm text-white">{userData.avatar || '👤'}</span>
+                      )}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userData.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userData.name}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600 cursor-pointer">
+                    <LogoutButton />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
