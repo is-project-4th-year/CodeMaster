@@ -37,7 +37,6 @@ type UserLayoutClientProps = {
   inProgressCount: number;
 };
 
-
 interface DailyBonusModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -166,7 +165,10 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
   const [statsExpanded, setStatsExpanded] = useState(false);
   
   const { levelUp, celebrate } = useConfetti();
-console.log(userData);
+
+  // Calculate XP percentage for progress bar
+  const xpPercentage = (userData.currentXP / userData.xpToNextLevel) * 100;
+
   // Store the current level in localStorage to detect changes
   useEffect(() => {
     const storedLevel = localStorage.getItem('userLevel');
@@ -274,8 +276,6 @@ console.log(userData);
     { icon: Settings, label: 'Profile', href: '/profile' },
   ];
 
-  const xpPercentage = (userData.totalXP / userData.xpToNextLevel) * 100;
-
   // Check if avatar is an image URL or emoji
   const isImageAvatar = userData.avatar?.startsWith('http') || userData.avatar?.startsWith('data:');
 
@@ -371,7 +371,12 @@ console.log(userData);
                   <div className="text-xs text-muted-foreground">New Level</div>
                 </div>
                 
-            
+                <div className="bg-gradient-to-br from-pink-500/10 to-orange-500/10 border border-pink-500/20 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent">
+                    {userData.totalPoints}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Points</div>
+                </div>
               </div>
 
               {/* Action Button */}
@@ -485,7 +490,9 @@ console.log(userData);
                         <Star className="w-3 h-3 text-yellow-500" />
                         Level {userData.level}
                       </span>
-                      <span className="text-slate-600 dark:text-slate-400">{userData.totalXP}/{userData.xpToNextLevel} XP</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        {userData.currentXP}/{userData.xpToNextLevel} XP
+                      </span>
                     </div>
                     <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
@@ -493,9 +500,17 @@ console.log(userData);
                         style={{ width: `${xpPercentage}%` }}
                       />
                     </div>
+                    
+                    {/* Total Points Display */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-500">Total Points:</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {userData.totalPoints}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Streak & Currency */}
+                  {/* Streak & Stats */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
                       <Flame className="w-4 h-4 text-orange-500 mx-auto mb-1" />
@@ -504,7 +519,8 @@ console.log(userData);
                     </div>
                     <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
                       <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
-
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.totalSolved}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Solved</p>
                     </div>
                   </div>
                 </div>
@@ -615,8 +631,6 @@ console.log(userData);
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
-
-            
             </div>
 
             {/* Right Side - Actions */}
@@ -627,6 +641,12 @@ console.log(userData);
                   <Flame className="w-4 h-4 text-orange-500" />
                   <span className="text-sm font-bold text-slate-900 dark:text-white">{userData.streak}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-400">day streak</span>
+                </div>
+                
+                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg px-3 py-2 shadow-sm dark:shadow-none">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{userData.totalPoints}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">points</span>
                 </div>
                 
                 <div className={`flex items-center gap-2 rounded-lg px-3 py-2 border shadow-sm ${
@@ -681,7 +701,7 @@ console.log(userData);
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{userData.name}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {userData.name}
+                        Level {userData.level} • {userData.totalPoints} points
                       </p>
                     </div>
                   </DropdownMenuLabel>
