@@ -37,7 +37,7 @@ type UserLayoutClientProps = {
   inProgressCount: number;
 };
 
-// ============= DAILY BONUS MODAL =============
+
 interface DailyBonusModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -622,15 +622,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
 
-              <div className="hidden md:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 rounded-lg px-4 py-2 flex-1 max-w-md border border-slate-200 dark:border-transparent">
-                <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search challenges, users..."
-                  className="bg-transparent border-0 outline-none text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 w-full"
-                />
-                <kbd className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">⌘K</kbd>
-              </div>
+            
             </div>
 
             {/* Right Side - Actions */}

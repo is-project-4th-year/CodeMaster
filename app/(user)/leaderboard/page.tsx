@@ -77,31 +77,13 @@ async function fetchLeaderboards(): Promise<Leaderboards> {
 
   // ── All-Time Leaderboard ──
   const { data: allTimeData } = await supabase
-    .from('user_profiles')
-    .select('user_id, avatar, total_points, total_solved')
-    .order('total_points', { ascending: false })
+    .from('leaderboard_snapshots')
+    .select('*')
+    .eq('period_type', 'all_time')
+    .eq('period_date', todayStr) // or use the latest snapshot date
+    .order('rank', { ascending: true })
     .limit(50)
-    .returns<UserProfileRow[]>();
-
-  // Fetch usernames via admin API (only in server components)
-  const allTimeWithUsernames: LeaderboardEntry[] = await Promise.all(
-    (allTimeData || []).map(async (entry, index) => {
-      let username = 'Anonymous';
-      if (entry.user_id) {
-        const { data: adminUser } = await supabase.auth.admin.getUserById(entry.user_id);
-        username = adminUser?.user?.email?.split('@')[0] || 'Anonymous';
-      }
-
-      return {
-        rank: index + 1,
-        username,
-        avatar: entry.avatar || 'User',
-        points: entry.total_points,
-        solvedToday: entry.total_solved,
-        isCurrentUser: entry.user_id === currentUserId,
-      };
-    })
-  );
+    .returns<LeaderboardSnapshotRow[]>();
 
   // ── Helper: safely format snapshot-based leaderboards ──
   const formatLeaderboard = (
@@ -119,7 +101,7 @@ async function fetchLeaderboards(): Promise<Leaderboards> {
   return {
     daily: formatLeaderboard(dailyData),
     weekly: formatLeaderboard(weeklyData),
-    allTime: allTimeWithUsernames,
+    allTime: formatLeaderboard(allTimeData),
   };
 }
 

@@ -58,7 +58,7 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
     const newSeed = `player-${randomId}-${Date.now().toString(36).substr(-4)}`;
     setCurrentSeed(newSeed);
   }, []);
-
+console.log("stats", stats);
   // Generate SVG from seed
   const getAvatarSvg = useCallback((seed: string): string => {
     return multiavatar(seed);

@@ -511,11 +511,7 @@ export default function DashboardClient({
                 <span>Daily Challenge</span>
                 <Badge variant="secondary" className="text-xs">2x XP</Badge>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-                <Zap className="w-6 h-6" />
-                <span>Speed Round</span>
-                <Badge variant="secondary" className="text-xs">5 min</Badge>
-              </Button>
+            
             </CardContent>
           </Card>
 

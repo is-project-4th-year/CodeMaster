@@ -229,10 +229,10 @@ export async function fetchDetailedStats(): Promise<DetailedStats | null> {
 
     // Challenges by difficulty
     const challengesByDifficulty = {
-      beginner: completedSolutions.filter(s => s.challenge?.rank <= 2).length,
-      intermediate: completedSolutions.filter(s => s.challenge?.rank >= 3 && s.challenge?.rank <= 5).length,
-      advanced: completedSolutions.filter(s => s.challenge?.rank >= 6 && s.challenge?.rank <= 7).length,
-      expert: completedSolutions.filter(s => s.challenge?.rank === 8).length,
+      beginner: completedSolutions.filter(s => s.challenges?.rank <= 2).length,
+      intermediate: completedSolutions.filter(s => s.challenges?.rank >= 3 && s.challenges?.rank <= 5).length,
+      advanced: completedSolutions.filter(s => s.challenges?.rank >= 6 && s.challenges?.rank <= 7).length,
+      expert: completedSolutions.filter(s => s.challenges?.rank === 8).length,
     };
 
     // Activity by day (last 7 days)
@@ -255,10 +255,10 @@ export async function fetchDetailedStats(): Promise<DetailedStats | null> {
     // Top categories
     const categoryCounts: Record<string, number> = {};
     completedSolutions.forEach(s => {
-      const category = s.challenge?.category || 'Other';
+      const category = s.challenges?.category || 'Other';
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
-
+console.log('completedSolutions', completedSolutions);
     const topCategories = Object.entries(categoryCounts)
       .map(([name, count]) => ({
         name,
@@ -274,7 +274,7 @@ export async function fetchDetailedStats(): Promise<DetailedStats | null> {
       .slice(0, 5)
       .map(s => ({
         date: s.completed_at || '',
-        challengeName: s.challenge?.name || 'Unknown',
+        challengeName: s.challenges?.name || 'Unknown',
         points: s.points_earned || 0,
         status: s.status as 'completed' | 'attempted',
       }));
