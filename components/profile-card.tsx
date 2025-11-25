@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BarChart3, Calendar, CheckCircle2, Flame, Loader2, 
-  Settings,  Star, Trophy, Edit
+  Settings, Star, Trophy, Edit, Target
 } from "lucide-react";
 
 import {
@@ -21,7 +21,6 @@ import {
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-
 
 import { createClient } from '@/lib/supabase/client';
 import multiavatar from '@multiavatar/multiavatar/esm';
@@ -39,7 +38,6 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
   const router = useRouter();
   const supabase = createClient();
   
- 
   const [selectedAvatar, setSelectedAvatar] = useState(profile.avatar);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -48,6 +46,7 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
   const [currentSeed, setCurrentSeed] = useState('');
   const [avatarMode, setAvatarMode] = useState<'emoji' | 'generated'>('emoji');
 
+  // Fixed: Use currentXP for level progress and totalPoints for lifetime points
   const levelPercentage = (profile.currentXP / profile.xpToNextLevel) * 100;
   const accountAge = Math.floor((Date.now() - new Date(profile.joinedDate).getTime()) / (1000 * 60 * 60 * 24));
   const maxDailyActivity = Math.max(...stats.activityByDay.map(d => d.challenges), 1);
@@ -100,7 +99,6 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
     setSelectedAvatar(avatar);
     const success = await updateUserAvatar(avatar);
     if (success) {
-     
       toast.success('Avatar updated successfully!');
       router.refresh();
     } else {
@@ -218,20 +216,20 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
                   </Badge>
                 </div>
 
-                {/* XP Progress */}
+                {/* XP Progress - Fixed to use currentXP */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Level {profile.level}</span>
-                    <span>{profile.totalXP} / {profile.xpToNextLevel} XP</span>
+                    <span>{profile.currentXP} / {profile.xpToNextLevel} XP</span>
                   </div>
                   <Progress value={levelPercentage} className="h-3" />
                   <p className="text-xs text-muted-foreground">
-                    {profile.xpToNextLevel - profile.totalXP} XP to level {profile.level + 1}
+                    {profile.xpToNextLevel - profile.currentXP} XP to level {profile.level + 1}
                   </p>
                 </div>
               </div>
 
-              {/* Quick Stats */}
+              {/* Quick Stats - Updated to show both current XP and total points */}
               <div className="grid grid-cols-2 gap-4 md:w-auto w-full">
                 <Card>
                   <CardContent className="p-4 text-center">
@@ -247,12 +245,18 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
                     <p className="text-xs text-muted-foreground">Day Streak</p>
                   </CardContent>
                 </Card>
-              
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <Target className="w-6 h-6 mx-auto mb-1 text-blue-500" />
+                    <p className="text-2xl font-bold">{profile.currentXP}</p>
+                    <p className="text-xs text-muted-foreground">Current XP</p>
+                  </CardContent>
+                </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
                     <Star className="w-6 h-6 mx-auto mb-1 text-purple-500" />
                     <p className="text-2xl font-bold">{profile.totalXP.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">Total XP</p>
+                    <p className="text-xs text-muted-foreground">Total Points</p>
                   </CardContent>
                 </Card>
               </div>
@@ -313,11 +317,11 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Total Attempts</CardTitle>
+                  <CardTitle className="text-sm">Total Points</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold">{stats.totalAttempts}</p>
-                  <p className="text-xs text-muted-foreground">{stats.hintsUsed} hints</p>
+                  <p className="text-3xl font-bold">{profile.totalXP.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Lifetime total</p>
                 </CardContent>
               </Card>
             </div>
@@ -511,4 +515,3 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
     </div>
   );
 }
-
