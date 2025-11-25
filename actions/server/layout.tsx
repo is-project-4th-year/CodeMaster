@@ -25,7 +25,7 @@ export async function fetchLayoutUserData(): Promise<LayoutUserData | null> {
         current_xp,
         xp_to_next_level,
         current_streak,
-     
+     total_points,
         total_solved,
         avatar
       `)
@@ -54,6 +54,7 @@ export async function fetchLayoutUserData(): Promise<LayoutUserData | null> {
       avatar: data.avatar || '👤',
       level: data.level || 1,
       currentXP: data.current_xp || 0,
+      totalXP: data.total_points || 0,
       xpToNextLevel: data.xp_to_next_level || 100,
       streak: data.current_streak || 0,
       rank: getRank(data.level || 1),

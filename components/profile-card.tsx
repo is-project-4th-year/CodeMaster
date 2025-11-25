@@ -58,7 +58,7 @@ export default function ProfileClient({ profile, stats }: ProfileClientProps) {
     const newSeed = `player-${randomId}-${Date.now().toString(36).substr(-4)}`;
     setCurrentSeed(newSeed);
   }, []);
-console.log("stats", stats);
+
   // Generate SVG from seed
   const getAvatarSvg = useCallback((seed: string): string => {
     return multiavatar(seed);
@@ -222,11 +222,11 @@ console.log("stats", stats);
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Level {profile.level}</span>
-                    <span>{profile.currentXP} / {profile.xpToNextLevel} XP</span>
+                    <span>{profile.totalXP} / {profile.xpToNextLevel} XP</span>
                   </div>
                   <Progress value={levelPercentage} className="h-3" />
                   <p className="text-xs text-muted-foreground">
-                    {profile.xpToNextLevel - profile.currentXP} XP to level {profile.level + 1}
+                    {profile.xpToNextLevel - profile.totalXP} XP to level {profile.level + 1}
                   </p>
                 </div>
               </div>

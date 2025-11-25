@@ -8,6 +8,7 @@ export interface LayoutUserData {
   streak: number;
   rank: string;
   totalPoints?: number;
+  totalXP: number;
 
   totalSolved: number;
 }

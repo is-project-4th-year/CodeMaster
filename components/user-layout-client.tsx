@@ -166,7 +166,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
   const [statsExpanded, setStatsExpanded] = useState(false);
   
   const { levelUp, celebrate } = useConfetti();
-
+console.log(userData);
   // Store the current level in localStorage to detect changes
   useEffect(() => {
     const storedLevel = localStorage.getItem('userLevel');
@@ -274,7 +274,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
     { icon: Settings, label: 'Profile', href: '/profile' },
   ];
 
-  const xpPercentage = (userData.currentXP / userData.xpToNextLevel) * 100;
+  const xpPercentage = (userData.totalXP / userData.xpToNextLevel) * 100;
 
   // Check if avatar is an image URL or emoji
   const isImageAvatar = userData.avatar?.startsWith('http') || userData.avatar?.startsWith('data:');
@@ -371,12 +371,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
                   <div className="text-xs text-muted-foreground">New Level</div>
                 </div>
                 
-                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {userData.totalPoints || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Total Points</div>
-                </div>
+            
               </div>
 
               {/* Action Button */}
@@ -490,7 +485,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
                         <Star className="w-3 h-3 text-yellow-500" />
                         Level {userData.level}
                       </span>
-                      <span className="text-slate-600 dark:text-slate-400">{userData.currentXP}/{userData.xpToNextLevel} XP</span>
+                      <span className="text-slate-600 dark:text-slate-400">{userData.totalXP}/{userData.xpToNextLevel} XP</span>
                     </div>
                     <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
@@ -509,8 +504,7 @@ const UserLayoutClient = ({ children, userData, inProgressCount }: UserLayoutCli
                     </div>
                     <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-lg p-2 text-center shadow-sm">
                       <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">{userData.totalPoints || 0}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">Points</p>
+
                     </div>
                   </div>
                 </div>
