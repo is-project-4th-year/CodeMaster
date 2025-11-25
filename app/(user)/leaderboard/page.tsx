@@ -12,12 +12,6 @@ interface LeaderboardSnapshotRow {
   challenges_solved: number;
 }
 
-interface UserProfileRow {
-  user_id: string;
-  avatar?: string;
-  total_points: number;
-  total_solved: number;
-}
 
 /* -------------------------------------------------
    2. Final Leaderboard Entry (shared with client)
