@@ -6,8 +6,6 @@ import { revalidatePath } from "next/cache";
 import { checkAdminRole } from "../admin";
 
 export async function deleteChallenge(id: string): Promise<{ success: boolean; error?: string }> {
- 
-  
   try {
     const isAdmin = await checkAdminRole();
     if (!isAdmin) {
@@ -16,15 +14,10 @@ export async function deleteChallenge(id: string): Promise<{ success: boolean; e
 
     const adminClient = createAdminClient();
 
-    // First delete test cases
-    await adminClient
-      .from('test_cases')
-      .delete()
-      .eq('exercise_id', id);
-
-    // Then delete challenge
+    // Delete from the base table, not the view
+    // The CASCADE will automatically delete related records (test_cases, challenge_tags)
     const { error } = await adminClient
-      .from('exercises_full')
+      .from('challenges') // Changed from 'challenges_full' to 'challenges'
       .delete()
       .eq('id', id);
 
@@ -33,11 +26,10 @@ export async function deleteChallenge(id: string): Promise<{ success: boolean; e
       return { success: false, error: error.message };
     }
 
-  
     revalidatePath('/admin/challenges/manage');
     return { success: true };
   } catch (error) {
-    console.error(' Unexpected error in deleteChallenge:', error);
+    console.error('Unexpected error in deleteChallenge:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
 }

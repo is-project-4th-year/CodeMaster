@@ -51,7 +51,7 @@ export type UserSolution = {
   is_perfect_solve: boolean;
   completed_at: string;
   points_earned: number;
-  challenge: {
+  challenges: {
     name: string;
     rank: number;
     category: string;
