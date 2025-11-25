@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Home, Code, Trophy, 
-  Settings, Search, Flame, Star, Crown, Sparkles,
+  Settings, Flame, Star, Crown, Sparkles,
   Menu, X, TrendingUp,
   Rocket, MenuIcon, Gift, User, LogOut,
   ChevronDown, ChevronUp
